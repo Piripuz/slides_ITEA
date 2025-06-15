@@ -1,0 +1,407 @@
+\documentclass[hyperref={pdfpagelabels=false}]{beamer}
+\input{preamble.tex}
+% \includeonlyframes{current}
+\title{Reverse ADL-Vickrey}
+\subtitle{Inferring Scheduling Preferences based on Congestion and Choice Data}
+\author{Pietro Giardina}
+
+\setdepartment{DTU Compute}
+\setcolor{dtured}
+
+
+
+\begin{document}
+\inserttitlepage
+
+
+\section{Introduction} % Vickrey
+\begin{frame}
+  \tableofcontents[currentsection]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Is Congestion a Problem?}
+  According to a recent study\footcite{kim2022congestion},
+  \begin{itemize}
+  \item An \textbf{average} delay of 4-5 minutes \textbf{per commuter} is caused by congestion
+  \item This damage is worth, in California, \textbf{1.67\%} of the state GDP.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How is congestion created?}
+  \begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{travel_time}
+    \caption{Travel Time, on California State Route 237, the 16th of February 2018.
+    Data from CalTrans PeMS.}
+    \label{fig:tt}
+  \end{figure}
+  \begin{itemize}
+  \item All commuters want to travel at the same time, with the same mode
+  \item The infrastructure saturates beyond capacity
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How can congestion be tackled?}
+  On demand side, Travel Demand Management:
+  \begin{itemize}
+  \item Influencing mode choice
+  \item Influencing route/destination choice
+  \item Incentivize spreading of departure times
+  \end{itemize}
+
+  How can we have an impact on when people decide to leave?
+\end{frame}
+
+\begin{frame}
+  \frametitle{When do People Travel?}
+  According to the bottleneck model\footcite{f32d6720-dd02-34b7-a4ba-c4c21193efe7, d0907f84-e14a-3d98-ad20-759f41491d6e},
+  minimising three main discomforts:
+  \begin{itemize}
+  \item Travel time
+  \item Arriving too early
+  \item Arriving too late
+  \end{itemize}
+
+  The cost is assumed to grow linearly on these three components
+\end{frame}
+
+\begin{frame}
+  \frametitle{The \(\alpha\)-\(\beta\)-\(\gamma\) Model}
+  Each commuter minimizes a cost function (from \cite{d0907f84-e14a-3d98-ad20-759f41491d6e})
+  \begin{equation*}
+    C(t_d) = \alpha(\text{travel time}) + \beta (\text{time early}) + \gamma (\text{time late})
+  \end{equation*}
+  \begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{cost_simple}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Calibrating the Parameters}
+  For many applications, it is important to find values for \(\alpha\), \(\beta\) and \(\gamma\) (\textit{scheduling preferences}) and \(t^*\).
+  \begin{itemize}
+  \item Historically, estimation was done with surveys
+  \item \textcite{54d203ee-4bf8-3234-9286-56e4c8b7f5bd} estimates the following:
+    \begin{equation*}
+      \frac{\beta}{\alpha} = 0.61\qquad \frac{\gamma}{\alpha} = 2.38
+    \end{equation*}
+  \item \textcite{https://doi.org/10.1111/iere.12692} presents a brief review of the results
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Weaknesses of Surveys}
+  Surveys are extremely costly, and can suffer from many sources of error
+  \begin{itemize}
+  \item Answers may be biased, due to reasons beyond the control of the scientist
+  \item Rounding may limit the precision
+  \end{itemize}
+
+  \begin{tikzpicture}[overlay, remember picture]
+    \node[
+    ellipse callout,
+    callout relative pointer={(-1,-1)},
+    fill=dtured!70,
+    text width=5.5cm,
+    align=center,
+    above right,
+    xshift=2cm,
+    yshift=2cm
+    ] (Q) at (current page.south west) {How much should I pay you for arriving 5 minutes earlier to work?};
+    \node[
+    ellipse callout,
+    callout relative pointer={(.5,-.5)},
+    fill=dtured!70,
+    % text width=3cm,
+    align=center,
+    below right=.5cm of Q,
+    xshift=1cm,
+    % yshift=2cm
+    ] (A) {\(x\) \euro};
+  \end{tikzpicture}
+\end{frame}
+\begin{frame}
+  \frametitle{Revealed Preferences data}
+  Data about Revealed Preferences may offer some advantages
+  \begin{itemize}
+  \item A priori, more precise
+  \item Can be systematically harvested
+  \item More difficult to elaborate
+  \end{itemize}
+  (image about RP)
+\end{frame}
+
+\begin{frame}
+  \frametitle{Research Question}
+  Can we calibrate the parameters \(\alpha\), \(\beta\) and \(\gamma\) by using only Revealed Preferences?
+\end{frame}
+
+\section{Methodology}
+\begin{frame}
+  \tableofcontents[currentsection]
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Idea}
+  From data that are objectively measurable,
+  we estimate the values for scheduling preferences:
+  
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}
+      \node[
+      align=center,
+      ellipse,
+      fill=dtured!30,
+      font=\small
+      ] (dep) {Individual\\ Departure Times};
+      \node[
+      align=center,
+      ellipse,
+      fill=dtured!30,
+      font=\small,
+      below = .7 cm of dep
+      ] (tt) {Travel time,\\for each Time Point};
+      \node[right = 2cm of {$(dep) !.5! (tt)$}] (mid) {};
+      \draw[
+      -{Triangle[width=32pt,length=23pt]},
+      line width=20pt,
+      dtured
+      ] (mid) -- ++(2.0cm,0);
+      \node[
+      right=2.4 cm of mid,
+      align=center,
+      ellipse,
+      fill=dtured!30,
+      font=\small,
+      ] {Original\\Parameters \\\(\alpha, \beta, \gamma, t^*\)};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Working Principle}
+  The development of the model is done in three main steps:
+  \begin{enumerate}
+  \item The optimal departure time is theoretically studied
+  \item A function, expressing the likelihood of a data point, is found
+  \item Maximising the likelihood, the parameters are estimated
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Evaluation of the Model}
+  Progressively more complex evaluations are possible:
+  \begin{enumerate}
+  \item Evaluation on a Synthetic Dataset
+  \item Evaluation of data from a Traffic Simulator
+  \item Evaluation on Real Data
+  \end{enumerate}
+\end{frame}
+
+\section{Model Developement}
+
+\begin{frame}
+  \tableofcontents[currentsection]
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Cost Function}
+  \begin{figure}
+    \centering
+    % \animategraphics[palindrome, autoplay,controls={play, stop},width=.7\textwidth]{20}{animation_no_shades/frame_}{0}{79}
+    \includegraphics[width=.7\textwidth]{animation_no_shades/frame_79}
+  \end{figure}
+  Three different types of minima:
+  \begin{itemize}
+  \item \textcolor{green}{Early minima}
+  \item \textcolor{blue}{On-time minima}
+  \item \textcolor{red}{Late minima}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Characterization of minima}
+  Location of minima depends on tangents to the travel time function, given \(\alpha, \beta\) and \(\gamma\):
+  \begin{figure}
+    \centering
+    % \animategraphics[palindrome, controls={play, stop},width=.8\textwidth]{20}{animation_shades/frame_}{0}{79}
+    \includegraphics[width=.8\textwidth]{animation_shades/frame_79}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Computation of Likelihood}
+  \begin{itemize}
+  \item Given the characterization, an expression for the likelihood can be found:
+  \scalebox{0.62}{\parbox{.5\linewidth}{
+        \begin{align*}
+          f_{T_a}(t_a) =
+          & \color<2->{blue} f_{T^*}(t_a)\int_{\beta_0(t_a)}^{\beta_\text{max}}f_\beta(b)\, db\int_{\gamma_0(t_a)}^{\gamma_\text{max}}f_\gamma(g)\, dg \\
+          & \color<2->{green}+ f_\beta(tt_a'(t_a))[tt_a''(t_a)]^+\int_1^\infty f_\gamma(x) \left(F_{T^*}(\min(b_e(tt_a'(t_a)), t_s(tt_a'(t_a), x))) - F_{T^*}(t_a)\right) dx\  \\
+          & \color<2->{red}+ f_\gamma(tt_a'(t_a))[tt_a''(t_a)]^+  \int_0^1f_\beta(x) \left(F_{T^*}(t_a) - F_{T^*}(\max(g_i(-tt_a'(t_a)), t_s(x, -tt_a'(t_a)))) \right) dx\
+        \end{align*}
+      }}
+  \item<2-> The expression for the likelihood is a sum of three different terms
+    \begin{itemize}
+    \item<2-> A term for \textcolor{blue}{on-time arrivals}
+    \item<2-> A term for \textcolor{green}{early arrivals}
+    \item<2-> A term for \textcolor{red}{late arrivals}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Maximising the Likelihood}
+  By using the expression for the likelihood,
+  scheduling delay parameters can be estimated:
+  \begin{itemize}
+  \item \(\beta, \gamma, t^*\) are assumed to be distributed
+  \item The distributions are parametrized by a parameter \(\theta\)
+  \item The likelihood yields a function \(\mathcal{L} : \theta \mapsto f_{T_a}(t_a | \theta)\)
+  \item Maximising the likelihood, an estimate \(\hat{\theta}\) is found
+  \end{itemize}
+\end{frame}
+
+\section{Evaluation of the Model}
+
+\begin{frame}
+  \tableofcontents[currentsection]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Evaluation on Synthetic Data}
+  Evaluation is performed on a dataset built accordingly to the bottleneck model
+  \begin{itemize}
+  \item A value for the parameter \(\theta\) is chosen
+  \item \(N\) samples are drawn from the distributions of \(\beta, \gamma, t^*\)
+  \item For each of the \(N\) triple of samples, the cost function is minimized
+  \item The model is run on the resulting dataset, yielding an estimate \(\hat{\theta}\) of the parameter \(\theta\)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Choosing the Parameter $\theta$}
+  Suppose the user characteristics distributed as
+  \begin{equation*}
+    \beta \sim \mathcal{N}(\mu_\beta, \sigma) \quad \gamma \sim \mathcal{N}(\mu_\gamma, \sigma) \quad t^* \sim \mathcal{N}(\mu_t, \sigma_t)
+  \end{equation*}
+  \(\theta \in \mathbb{R}^5\) can be, for instance, chosen as follows:
+  \begin{equation*}
+    \theta = \begin{pmatrix}
+      \mu_\beta \\
+      \mu_\gamma \\
+      \mu_t \\
+      \sigma \\
+      \sigma_t
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      0.5 \\
+      1.4 \\
+      9.5 \\
+      0.3 \\
+      1
+    \end{pmatrix}
+  \end{equation*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling Arrival Times}
+  Arrival times are found by minimizing the cost.
+  \begin{itemize}
+  \item Independently minimizing the cost for \(N = 100,000\) samples, the following distribution is found
+  \item<2-> The theoretical likelihood, for the original value of \(\theta\), closely resembles the empirical distribution
+  \end{itemize}
+  \centering
+  \alt<1>{\includegraphics[width=.65\textwidth]{hist_no_ll}}{\includegraphics[width=.65\textwidth]{hist_ll}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Plotting the Likelihood}
+  By fixing some of the components of \(\theta\), the likelihood can be plotted when varying the rest of them.
+
+  For \only<1>{\(\sigma = 0.3\)}\only<2>{\(\sigma = 0.03\)}\only<3>{\(\sigma = 1.3\)}
+
+  \centering
+  \only<1>{\includegraphics[width=.8\textwidth]{contour_beautiful}}
+  \only<2>{\includegraphics[width=.8\textwidth]{contour_ugly}}
+  \only<3>{\includegraphics[width=.8\textwidth]{contour_flat}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Retrieving the parameter \(\theta\)}
+  Running an optimizer on the likelihood,
+  the parameter \(\theta \in \mathbb{R}^5\) can be retrieved.
+  \begin{itemize}
+  \item Sufficient precision is achieved, even with gradient-free optimization techniques
+  \item Depending on the value of the parameter \(\sigma\),
+    relative error can grow as high as \(15\%\).
+  \item When the variance \(\sigma\) is low, a grid search can be necessary for choosing the initial condition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Evaluation on Simulated Data}
+  A framework was developed for validation on data from the traffic simulator METROPOLIS2.
+  \begin{itemize}
+  \item The simulator cannot achieve convergence without employing a logit choice model
+  \item Our model assumes deterministic users
+  \item Convergence cannot be achieved on data from a traffic simulator
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Evaluation on Real Data}
+  On Real data, the model shows deeper problems
+  \begin{itemize}
+  \item \textcite{https://doi.org/10.1111/iere.12692} reveals problem with low steepness of real data
+  \item Our independent studies confirm the problem
+  \item Non-equilibrium studies would infer extremely low values for \(\beta, \gamma\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Low Slopes in Real Data}
+  According to \textcite{https://doi.org/10.1111/iere.12692},
+  observed slopes are way lower than what would be expected from equilibrium solutions
+  \begin{figure}
+    \centering
+    \includegraphics[width=.6\textwidth]{slopes_hall}
+    \caption{Actual travel time, compared with theoretical equilibrium solution. Image taken from \textcite{https://doi.org/10.1111/iere.12692}}
+  \end{figure}
+  \begin{itemize}
+  \item The same problem shows in both urban and non-urban settings
+  \end{itemize}
+\end{frame}
+
+\section{Discussion}
+
+\begin{frame}
+  \tableofcontents[currentsection]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Extension to Real Data}
+  The main purpose of the model is being deployed on real data
+  \begin{itemize}
+  \item Simulated data show problem with logit
+  \item Real data show as well problems with slow steepnesses
+  \item These problems can be tackled one by one, and be object of future research
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+  \printbibliography
+\end{frame}
+
+\end{document}
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: t
+%%% End:
