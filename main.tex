@@ -3,10 +3,14 @@
 % \includeonlyframes{current}
 \title{Reverse ADL-Vickrey}
 \subtitle{Inferring Scheduling Preferences based on Congestion and Choice Data}
-\author{Pietro Giardina}
+\author[]{\small{Andr\'e de Palma, Pietro Giardina, Zhenyu Yang, Nikolas Geroliminis}}
+\institute{ITEA Conference 2025}
 
 \begin{document}
 
+\begin{frame}
+\titlepage
+\end{frame}
 
 \section{Introduction} % Vickrey
 \begin{frame}
@@ -203,6 +207,44 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Minimization of Cost Function}
+  The cost function, in terms of the arrival time, is
+    \begin{equation*}
+      C(t_a) = tt_a(t_a) + \beta[t^*-t_a]^+ + \gamma[t_a-t^*]^+
+    \end{equation*}
+    \begin{itemize}
+    \item We assume \(tt_a(t)\) to be smooth
+    \item The cost is differentiable everywhere but in \(t_a = t^*\)
+    \item We study where the minima are realized
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Early and late arrivals}
+  Where the cost function is differentiable, we can compute the first order conditions.
+  \begin{itemize}
+  \item First order conditions yield
+    \begin{align*}
+      tt_a'(t_a) & = \beta \\
+      tt_a'(t_a) & = -\gamma
+    \end{align*}
+  \item These points correspond to, respectively, early and late arrivals.
+  \item Being the system not at equilibrium, the travel time function is not necessarily the one arising from Vickrey's model, for the users' parameters
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{On-time Arrivals}
+  The cost is not differentiable for
+  \begin{equation*}
+    t_a = t^*
+  \end{equation*}
+  \begin{itemize}
+  \item Another minimum can appear in this point
+  \item This minimum corresponds to an \textit{on-time} arrival
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{The Cost Function}
   \begin{figure}
     \centering
@@ -218,8 +260,33 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Early and late arrival on the function \(tt_a(t)\)}
+  If \(t_a\) is an early (or late) arrival, its cost grows linearly on the distance \(|t_a - t^*|\).
+  \begin{itemize}
+  \item Fixing \(\beta\), \(\gamma\) zones are defined such that,
+    when \(t^*\) falls in them, an early (or late) arrival is realized
+  \item<2-> Early and late arrival zones may interact
+  \end{itemize}
+  \begin{center}
+    \only<1>{\includegraphics[width=.8\textwidth]{tt_early_late}}
+    \only<2->{\includegraphics[width=.8\textwidth]{tt_early_late_intersecting}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Minima location, varying \(t^*\)}
+  \begin{itemize}
+  \item When varying \(t^*\), the optimal arrival time will vary as follows
+    \begin{center}
+      \includegraphics[width=.8\textwidth]{monotone_t_a}
+    \end{center}
+  \item By estimating the bounds of the red and green intervals, we infer when a user will arrive
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Characterization of minima}
-  Location of minima depends on tangents to the travel time function, given \(\alpha, \beta\) and \(\gamma\):
+  The location of minima is hence characterized
   \begin{figure}
     \centering
     % \animategraphics[palindrome, controls={play, stop},width=.8\textwidth]{20}{animation_shades/frame_}{0}{79}
@@ -245,6 +312,34 @@
     \item<2-> A term for \textcolor{green}{early arrivals}
     \item<2-> A term for \textcolor{red}{late arrivals}
     \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Likelihood of being Early, On-Time and Late}
+  \begin{itemize}
+  \item By supposing parameters to be normally distributed, likelihood can be computed and plotted for each arrival time.
+  \end{itemize}
+  \begin{center}
+    \includegraphics[width=.7\textwidth]{when_likelihood}
+  \end{center}
+  \begin{itemize}
+  \item<2-> When the derivative of the travel time function \(tt_a'(t_a)\) is close to the mean of \(\beta\), early arrival occur
+  \item<3-> When \(tt_a'(t_a)\) is close to the mean of \(-\gamma\), late arrivals occur
+  \item<4-> When \(tt_a'(t_a)\) is too high in absolute value, no arrivals occur
+  \item<5-> When \(tt_a'(t_a)\) is low enough, on-time arrivals occur
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Total Likelihood}
+  By summing likelihoods of early, late and on-time arrivals, the total likelihood can be computed
+  \begin{center}
+    \includegraphics[width=.85\textwidth]{total_likelihood}
+  \end{center}
+  \begin{itemize}
+  \item As expected, the likelihood shows two spikes for early and late arrivals
   \end{itemize}
 \end{frame}
 
