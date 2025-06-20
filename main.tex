@@ -5,13 +5,7 @@
 \subtitle{Inferring Scheduling Preferences based on Congestion and Choice Data}
 \author{Pietro Giardina}
 
-\setdepartment{DTU Compute}
-\setcolor{dtured}
-
-
-
 \begin{document}
-\inserttitlepage
 
 
 \section{Introduction} % Vickrey
@@ -105,7 +99,7 @@
     \node[
     ellipse callout,
     callout relative pointer={(-1,-1)},
-    fill=dtured!70,
+    fill=red!70,
     text width=5.5cm,
     align=center,
     above right,
@@ -115,7 +109,7 @@
     \node[
     ellipse callout,
     callout relative pointer={(.5,-.5)},
-    fill=dtured!70,
+    fill=red!70,
     % text width=3cm,
     align=center,
     below right=.5cm of Q,
@@ -155,13 +149,13 @@
       \node[
       align=center,
       ellipse,
-      fill=dtured!30,
+      fill=red!30,
       font=\small
       ] (dep) {Individual\\ Departure Times};
       \node[
       align=center,
       ellipse,
-      fill=dtured!30,
+      fill=red!30,
       font=\small,
       below = .7 cm of dep
       ] (tt) {Travel time,\\for each Time Point};
@@ -169,13 +163,13 @@
       \draw[
       -{Triangle[width=32pt,length=23pt]},
       line width=20pt,
-      dtured
+      red
       ] (mid) -- ++(2.0cm,0);
       \node[
       right=2.4 cm of mid,
       align=center,
       ellipse,
-      fill=dtured!30,
+      fill=red!30,
       font=\small,
       ] {Original\\Parameters \\\(\alpha, \beta, \gamma, t^*\)};
     \end{tikzpicture}
@@ -212,8 +206,8 @@
   \frametitle{The Cost Function}
   \begin{figure}
     \centering
-    \animategraphics[palindrome, autoplay,controls={play, stop},width=.7\textwidth]{20}{animation_no_shades/frame_}{0}{79}
-    % \includegraphics[width=.7\textwidth]{animation_no_shades/frame_79}
+    % \animategraphics[palindrome, autoplay,controls={play, stop},width=.7\textwidth]{20}{animation_no_shades/frame_}{0}{79}
+    \includegraphics[width=.7\textwidth]{animation_no_shades/frame_79}
   \end{figure}
   Three different types of minima:
   \begin{itemize}
@@ -228,8 +222,8 @@
   Location of minima depends on tangents to the travel time function, given \(\alpha, \beta\) and \(\gamma\):
   \begin{figure}
     \centering
-    \animategraphics[palindrome, controls={play, stop},width=.8\textwidth]{20}{animation_shades/frame_}{0}{79}
-    % \includegraphics[width=.8\textwidth]{animation_shades/frame_79}
+    % \animategraphics[palindrome, controls={play, stop},width=.8\textwidth]{20}{animation_shades/frame_}{0}{79}
+    \includegraphics[width=.8\textwidth]{animation_shades/frame_79}
   \end{figure}
 \end{frame}
 
